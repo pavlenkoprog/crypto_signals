@@ -14,6 +14,7 @@
   select, button { font-size: 13px; padding: 6px 12px; border: 1px solid #d0cec6; border-radius: 6px; background: #fff; cursor: pointer; color: #1a1a18; }
   button:hover { background: #f0ede6; }
   .container { padding: 0 24px 24px; overflow-x: auto; }
+  .section-title { padding: 0 24px 10px; font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: .04em; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #e0ddd5; }
   th { background: #f8f7f3; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #666; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e0ddd5; }
   td { padding: 9px 12px; border-bottom: 1px solid #f0ede6; font-size: 13px; white-space: nowrap; }
@@ -23,8 +24,14 @@
   .BUY  { background: #e8f4ea; color: #1e6b29; }
   .SELL { background: #fdecea; color: #b52b2b; }
   .HOLD { background: #f0ede6; color: #666; }
+  .ERROR { background: #fdecea; color: #b52b2b; }
+  .SKIP { background: #f7f3e8; color: #7b5e00; }
+  .OK { background: #e8f4ea; color: #1e6b29; }
+  .FAIL { background: #fdecea; color: #b52b2b; }
   .price { font-variant-numeric: tabular-nums; font-family: monospace; font-size: 12px; }
   .empty { text-align: center; padding: 40px; color: #999; }
+  .pnl-pos { color: #1e6b29; font-weight: 600; }
+  .pnl-neg { color: #b52b2b; font-weight: 600; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; display: inline-block; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 </style>
@@ -67,8 +74,30 @@
   </table>
 </div>
 
+<div class="section-title">История сделок</div>
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>Время</th>
+        <th>Монета</th>
+        <th>Действие</th>
+        <th>Сумма (USDT)</th>
+        <th>Qty</th>
+        <th>Цена</th>
+        <th>Сигнал</th>
+        <th>Результат</th>
+        <th>PnL (USDT)</th>
+        <th>PnL (%)</th>
+      </tr>
+    </thead>
+    <tbody id="tradesTbody"><tr><td colspan="10" class="empty">Загрузка сделок...</td></tr></tbody>
+  </table>
+</div>
+
 <script>
 let allData = [];
+let allTrades = [];
 
 function badge(v) {
   return `<span class="badge ${v}">${v}</span>`;
@@ -100,6 +129,34 @@ function render(data) {
     </tr>`).join("");
 }
 
+function pnlClass(v) {
+  const x = parseFloat(v || 0);
+  if (x > 0) return "pnl-pos";
+  if (x < 0) return "pnl-neg";
+  return "";
+}
+
+function renderTrades(data) {
+  const tbody = document.getElementById("tradesTbody");
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="10" class="empty">Сделок пока нет</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${r.timestamp || ""}</td>
+      <td><strong>${(r.symbol || "").replace("USDT","")}</strong></td>
+      <td>${badge(r.action || "HOLD")}</td>
+      <td class="price">${Number(r.usdt_amount || 0).toFixed(4)}</td>
+      <td class="price">${Number(r.qty || 0).toFixed(8)}</td>
+      <td class="price">${Number(r.price || 0).toPrecision(6)}</td>
+      <td>${badge(r.signal || "HOLD")}</td>
+      <td>${badge(r.result || "OK")}</td>
+      <td class="price ${pnlClass(r.pnl_usdt)}">${Number(r.pnl_usdt || 0).toFixed(4)}</td>
+      <td class="price ${pnlClass(r.pnl_pct)}">${Number(r.pnl_pct || 0).toFixed(2)}%</td>
+    </tr>`).join("");
+}
+
 function updateFilter(data) {
   const sel = document.getElementById("filterSymbol");
   const syms = [...new Set(data.map(r => r.symbol))].sort();
@@ -110,12 +167,18 @@ function updateFilter(data) {
 
 async function load() {
   try {
-    const res = await fetch("/api/signals");
-    allData = await res.json();
+    const [signalsRes, tradesRes] = await Promise.all([
+      fetch("/api/signals"),
+      fetch("/api/trades"),
+    ]);
+    allData = await signalsRes.json();
+    allTrades = await tradesRes.json();
     updateFilter(allData);
     render(allData);
+    renderTrades(allTrades);
     const now = new Date().toLocaleTimeString("ru");
-    document.getElementById("status").textContent = `обновлено ${now} · ${allData.length} записей`;
+    document.getElementById("status").textContent =
+      `обновлено ${now} · сигналов: ${allData.length} · сделок: ${allTrades.length}`;
   } catch(e) {
     document.getElementById("status").textContent = "ошибка загрузки";
   }

@@ -53,3 +53,11 @@ def log_trade(
     ]
     with open(TRADES_FILE, "a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow(row)
+
+
+def read_trades(limit: int = 200) -> list[dict]:
+    if not os.path.exists(TRADES_FILE):
+        return []
+    with open(TRADES_FILE, "r", newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    return rows[-limit:][::-1]
