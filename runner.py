@@ -4,8 +4,10 @@ runner.py — запускает цикл: загрузка → стратеги
 """
 import time
 import argparse
+import json
 from collections import Counter
 from datetime import datetime, UTC
+from pathlib import Path
 
 from core.config import INTERVAL, LIMIT, SYMBOLS
 from core.data import fetch_ohlcv
@@ -23,9 +25,18 @@ STRATEGIES = {
     "ema":  strategy_ema.signal,
     "vwap": strategy_vwap.signal,
 }
+OPTIMIZATION_FILES = {
+    "rsi": "rsi_best_params.json",
+    "macd": "macd_best_params.json",
+    "bb": "bollinger_bands_best_params.json",
+    "ema": "ema_cross_best_params.json",
+    "vwap": "vwap_best_params.json",
+}
 
 CYCLE_SECONDS = 60 * 5  # каждые 5 минут
 PROCESS_STARTED_AT = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+BASE_DIR = Path(__file__).resolve().parent
+OPTIMIZATION_DIR = BASE_DIR / "optimization" / "results"
 
 
 def consensus(signals: dict) -> str:
@@ -34,12 +45,37 @@ def consensus(signals: dict) -> str:
     return top if count >= 3 else "HOLD"
 
 
+def load_optimized_params() -> dict[str, dict[str, dict]]:
+    by_strategy = {}
+    for strategy_name, filename in OPTIMIZATION_FILES.items():
+        path = OPTIMIZATION_DIR / filename
+        if not path.exists():
+            by_strategy[strategy_name] = {}
+            continue
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            best_by_symbol = payload.get("best_by_symbol", {})
+            by_strategy[strategy_name] = {
+                symbol: entry.get("params", {})
+                for symbol, entry in best_by_symbol.items()
+                if isinstance(entry, dict)
+            }
+        except Exception:
+            by_strategy[strategy_name] = {}
+    return by_strategy
+
+
 def run_once():
+    optimized_params = load_optimized_params()
     for symbol in SYMBOLS:
         try:
             df = fetch_ohlcv(symbol, INTERVAL, LIMIT)
             price = df["close"].iloc[-1]
-            sigs = {name: fn(df) for name, fn in STRATEGIES.items()}
+            sigs = {}
+            for name, fn in STRATEGIES.items():
+                kwargs = optimized_params.get(name, {}).get(symbol, {})
+                sigs[name] = fn(df, **kwargs)
             result = consensus(sigs)
             log_signal(symbol, price, sigs, result, PROCESS_STARTED_AT)
             print(f"{symbol:15s}  price={price:<14.6f}  {sigs}  -> {result}")
