@@ -1,0 +1,100 @@
+{
+  "strategy": "MACD",
+  "generated_at_utc": "2026-04-23 15:46:56",
+  "interval": "5",
+  "limit": 1000,
+  "symbols_count": 10,
+  "combos_count": 27,
+  "best_by_symbol": {
+    "RENDERUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 20,
+        "signal_period": 6
+      },
+      "profit_pct": -0.38409451409190387,
+      "trades": 107
+    },
+    "STXUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 26,
+        "signal_period": 6
+      },
+      "profit_pct": -1.9407849132239585,
+      "trades": 109
+    },
+    "ALGOUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 34,
+        "signal_period": 6
+      },
+      "profit_pct": 1.6915722641493325,
+      "trades": 93
+    },
+    "CHZUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 20,
+        "signal_period": 6
+      },
+      "profit_pct": 7.71691963884642,
+      "trades": 108
+    },
+    "ADAUSDT": {
+      "params": {
+        "fast": 12,
+        "slow": 20,
+        "signal_period": 12
+      },
+      "profit_pct": -0.9458935026352089,
+      "trades": 71
+    },
+    "LINKUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 20,
+        "signal_period": 6
+      },
+      "profit_pct": -0.8339773159881436,
+      "trades": 105
+    },
+    "CRVUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 20,
+        "signal_period": 9
+      },
+      "profit_pct": -2.1438869005675043,
+      "trades": 95
+    },
+    "RUNEUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 26,
+        "signal_period": 9
+      },
+      "profit_pct": -1.1532836942842462,
+      "trades": 96
+    },
+    "PEPEUSDT": {
+      "params": {
+        "fast": 8,
+        "slow": 20,
+        "signal_period": 9
+      },
+      "profit_pct": 4.71347143373031,
+      "trades": 79
+    },
+    "FLOKIUSDT": {
+      "params": {
+        "fast": 12,
+        "slow": 20,
+        "signal_period": 12
+      },
+      "profit_pct": 5.189050969544939,
+      "trades": 69
+    }
+  }
+}

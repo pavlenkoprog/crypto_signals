@@ -1,0 +1,90 @@
+{
+  "strategy": "Bollinger Bands",
+  "generated_at_utc": "2026-04-23 15:41:51",
+  "interval": "5",
+  "limit": 1000,
+  "symbols_count": 10,
+  "combos_count": 16,
+  "best_by_symbol": {
+    "RENDERUSDT": {
+      "params": {
+        "period": 20,
+        "std_dev": 1.6
+      },
+      "profit_pct": 4.984378699075598,
+      "trades": 36
+    },
+    "STXUSDT": {
+      "params": {
+        "period": 26,
+        "std_dev": 2.8
+      },
+      "profit_pct": 4.353131433344815,
+      "trades": 7
+    },
+    "ALGOUSDT": {
+      "params": {
+        "period": 20,
+        "std_dev": 2.4
+      },
+      "profit_pct": 3.424248716133582,
+      "trades": 12
+    },
+    "CHZUSDT": {
+      "params": {
+        "period": 26,
+        "std_dev": 2.0
+      },
+      "profit_pct": 22.36797796086274,
+      "trades": 26
+    },
+    "ADAUSDT": {
+      "params": {
+        "period": 20,
+        "std_dev": 1.6
+      },
+      "profit_pct": 4.526490416357132,
+      "trades": 36
+    },
+    "LINKUSDT": {
+      "params": {
+        "period": 14,
+        "std_dev": 1.6
+      },
+      "profit_pct": 5.619292174892143,
+      "trades": 46
+    },
+    "CRVUSDT": {
+      "params": {
+        "period": 14,
+        "std_dev": 2.0
+      },
+      "profit_pct": 6.841951331452201,
+      "trades": 32
+    },
+    "RUNEUSDT": {
+      "params": {
+        "period": 20,
+        "std_dev": 2.8
+      },
+      "profit_pct": 12.042344471802501,
+      "trades": 6
+    },
+    "PEPEUSDT": {
+      "params": {
+        "period": 20,
+        "std_dev": 1.6
+      },
+      "profit_pct": 9.778343009918222,
+      "trades": 36
+    },
+    "FLOKIUSDT": {
+      "params": {
+        "period": 14,
+        "std_dev": 2.0
+      },
+      "profit_pct": 10.962591200649086,
+      "trades": 26
+    }
+  }
+}

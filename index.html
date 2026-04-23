@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Signals</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f0; color: #1a1a18; font-size: 14px; }
+  header { background: #fff; border-bottom: 1px solid #e0ddd5; padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 16px; font-weight: 500; }
+  .status { font-size: 12px; color: #888; margin-left: auto; }
+  .filters { padding: 12px 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+  select, button { font-size: 13px; padding: 6px 12px; border: 1px solid #d0cec6; border-radius: 6px; background: #fff; cursor: pointer; color: #1a1a18; }
+  button:hover { background: #f0ede6; }
+  .container { padding: 0 24px 24px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #e0ddd5; }
+  th { background: #f8f7f3; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #666; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e0ddd5; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f0ede6; font-size: 13px; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #faf9f6; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .BUY  { background: #e8f4ea; color: #1e6b29; }
+  .SELL { background: #fdecea; color: #b52b2b; }
+  .HOLD { background: #f0ede6; color: #666; }
+  .price { font-variant-numeric: tabular-nums; font-family: monospace; font-size: 12px; }
+  .empty { text-align: center; padding: 40px; color: #999; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="dot"></span>
+  <h1>Crypto Signals</h1>
+  <span class="status" id="status">загрузка...</span>
+</header>
+
+<div class="filters">
+  <select id="filterSymbol"><option value="">Все монеты</option></select>
+  <select id="filterSignal">
+    <option value="">Все сигналы</option>
+    <option value="BUY">BUY</option>
+    <option value="SELL">SELL</option>
+    <option value="HOLD">HOLD</option>
+  </select>
+  <button onclick="load()">↻ Обновить</button>
+</div>
+
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>Время</th>
+        <th>Монета</th>
+        <th>Цена</th>
+        <th>RSI</th>
+        <th>MACD</th>
+        <th>BB</th>
+        <th>EMA</th>
+        <th>VWAP</th>
+        <th>Итог</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"><tr><td colspan="9" class="empty">Загрузка данных...</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+let allData = [];
+
+function badge(v) {
+  return `<span class="badge ${v}">${v}</span>`;
+}
+
+function render(data) {
+  const sym = document.getElementById("filterSymbol").value;
+  const sig = document.getElementById("filterSignal").value;
+  const rows = data.filter(r =>
+    (!sym || r.symbol === sym) &&
+    (!sig || r.consensus === sig)
+  );
+  const tbody = document.getElementById("tbody");
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">Нет данных</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.timestamp}</td>
+      <td><strong>${r.symbol.replace("USDT","")}</strong></td>
+      <td class="price">${parseFloat(r.price).toPrecision(6)}</td>
+      <td>${badge(r.rsi)}</td>
+      <td>${badge(r.macd)}</td>
+      <td>${badge(r.bb)}</td>
+      <td>${badge(r.ema)}</td>
+      <td>${badge(r.vwap)}</td>
+      <td>${badge(r.consensus)}</td>
+    </tr>`).join("");
+}
+
+function updateFilter(data) {
+  const sel = document.getElementById("filterSymbol");
+  const syms = [...new Set(data.map(r => r.symbol))].sort();
+  const current = sel.value;
+  sel.innerHTML = `<option value="">Все монеты</option>` +
+    syms.map(s => `<option value="${s}"${s===current?" selected":""}>${s.replace("USDT","")}</option>`).join("");
+}
+
+async function load() {
+  try {
+    const res = await fetch("/api/signals");
+    allData = await res.json();
+    updateFilter(allData);
+    render(allData);
+    const now = new Date().toLocaleTimeString("ru");
+    document.getElementById("status").textContent = `обновлено ${now} · ${allData.length} записей`;
+  } catch(e) {
+    document.getElementById("status").textContent = "ошибка загрузки";
+  }
+}
+
+document.getElementById("filterSymbol").addEventListener("change", () => render(allData));
+document.getElementById("filterSignal").addEventListener("change", () => render(allData));
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>

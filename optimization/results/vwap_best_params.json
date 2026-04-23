@@ -1,0 +1,80 @@
+{
+  "strategy": "VWAP",
+  "generated_at_utc": "2026-04-23 15:59:59",
+  "interval": "5",
+  "limit": 1000,
+  "symbols_count": 10,
+  "combos_count": 6,
+  "best_by_symbol": {
+    "RENDERUSDT": {
+      "params": {
+        "threshold": 0.004
+      },
+      "profit_pct": 0.8577372209137346,
+      "trades": 7
+    },
+    "STXUSDT": {
+      "params": {
+        "threshold": 0.005
+      },
+      "profit_pct": 0.2131192758422884,
+      "trades": 5
+    },
+    "ALGOUSDT": {
+      "params": {
+        "threshold": 0.004
+      },
+      "profit_pct": -4.117007453334742,
+      "trades": 13
+    },
+    "CHZUSDT": {
+      "params": {
+        "threshold": 0.005
+      },
+      "profit_pct": 2.472800556160615,
+      "trades": 11
+    },
+    "ADAUSDT": {
+      "params": {
+        "threshold": 0.005
+      },
+      "profit_pct": -1.6841160720521442,
+      "trades": 7
+    },
+    "LINKUSDT": {
+      "params": {
+        "threshold": 0.008
+      },
+      "profit_pct": 0.2814157376339388,
+      "trades": 2
+    },
+    "CRVUSDT": {
+      "params": {
+        "threshold": 0.004
+      },
+      "profit_pct": -0.38048077535841607,
+      "trades": 8
+    },
+    "RUNEUSDT": {
+      "params": {
+        "threshold": 0.002
+      },
+      "profit_pct": 15.522284095543725,
+      "trades": 3
+    },
+    "PEPEUSDT": {
+      "params": {
+        "threshold": 0.005
+      },
+      "profit_pct": -3.3145845640759286,
+      "trades": 11
+    },
+    "FLOKIUSDT": {
+      "params": {
+        "threshold": 0.006
+      },
+      "profit_pct": -0.5848684788899772,
+      "trades": 11
+    }
+  }
+}

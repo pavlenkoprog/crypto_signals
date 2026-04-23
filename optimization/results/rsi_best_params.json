@@ -1,0 +1,100 @@
+{
+  "strategy": "RSI",
+  "generated_at_utc": "2026-04-23 15:59:22",
+  "interval": "5",
+  "limit": 1000,
+  "symbols_count": 10,
+  "combos_count": 64,
+  "best_by_symbol": {
+    "RENDERUSDT": {
+      "params": {
+        "period": 8,
+        "buy_level": 30,
+        "sell_level": 65
+      },
+      "profit_pct": 6.9439598200096375,
+      "trades": 66
+    },
+    "STXUSDT": {
+      "params": {
+        "period": 8,
+        "buy_level": 35,
+        "sell_level": 70
+      },
+      "profit_pct": 7.710760420959173,
+      "trades": 68
+    },
+    "ALGOUSDT": {
+      "params": {
+        "period": 21,
+        "buy_level": 30,
+        "sell_level": 70
+      },
+      "profit_pct": 3.4244889452540894,
+      "trades": 12
+    },
+    "CHZUSDT": {
+      "params": {
+        "period": 14,
+        "buy_level": 35,
+        "sell_level": 70
+      },
+      "profit_pct": 28.83711004373022,
+      "trades": 36
+    },
+    "ADAUSDT": {
+      "params": {
+        "period": 14,
+        "buy_level": 30,
+        "sell_level": 65
+      },
+      "profit_pct": 5.971468014114034,
+      "trades": 30
+    },
+    "LINKUSDT": {
+      "params": {
+        "period": 10,
+        "buy_level": 35,
+        "sell_level": 70
+      },
+      "profit_pct": 7.322998432257544,
+      "trades": 54
+    },
+    "CRVUSDT": {
+      "params": {
+        "period": 14,
+        "buy_level": 30,
+        "sell_level": 80
+      },
+      "profit_pct": 5.207024346982325,
+      "trades": 15
+    },
+    "RUNEUSDT": {
+      "params": {
+        "period": 8,
+        "buy_level": 30,
+        "sell_level": 75
+      },
+      "profit_pct": 12.785999724117069,
+      "trades": 52
+    },
+    "PEPEUSDT": {
+      "params": {
+        "period": 8,
+        "buy_level": 25,
+        "sell_level": 80
+      },
+      "profit_pct": 9.259378904369653,
+      "trades": 34
+    },
+    "FLOKIUSDT": {
+      "params": {
+        "period": 8,
+        "buy_level": 35,
+        "sell_level": 80
+      },
+      "profit_pct": 14.263400347146703,
+      "trades": 48
+    }
+  }
+}
