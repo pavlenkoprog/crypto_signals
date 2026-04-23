@@ -16,7 +16,10 @@ htmlcov/
 
 # Local runtime artifacts
 signals.csv
+trades.csv
+open_positions.json
 *.log
+.env
 
 # OS/editor
 .DS_Store
