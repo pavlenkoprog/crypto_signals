@@ -48,6 +48,45 @@ class BybitClient:
             raise ValueError(f"Bybit error: {result.get('retCode')} {result.get('retMsg')}")
         return result
 
+    def get_symbol_precision(self, symbol: str) -> dict[str, Any]:
+        """Получить правила округления для символа"""
+        url = f"{self.base_url}/v5/market/instruments-info"
+        params = {"category": "spot", "symbol": symbol}
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data.get("retCode") != 0:
+            raise Exception(f"Bybit error: {data.get('retCode')} {data.get('retMsg')}")
+
+        items = data.get("result", {}).get("list", [])
+        if not items:
+            raise Exception(f"Symbol {symbol} not found")
+
+        lot_filter = items[0].get("lotSizeFilter", {})
+        return {
+            "basePrecision": float(lot_filter.get("basePrecision", "0.01")),
+            "quotePrecision": float(lot_filter.get("quotePrecision", "0.01")),
+            "minOrderQty": float(lot_filter.get("minOrderQty", "0.01")),
+            "maxOrderQty": float(lot_filter.get("maxOrderQty", "1000000")),
+        }
+
+    def round_qty(self, symbol: str, qty: float) -> str:
+        """Округлить количество по правилам биржи"""
+        precision = self.get_symbol_precision(symbol)
+        base_precision = precision["basePrecision"]
+
+        # Округляем до нужного шага
+        rounded = round(qty / base_precision) * base_precision
+
+        # Определяем количество знаков после запятой
+        if base_precision >= 1:
+            decimals = 0
+        else:
+            decimals = len(str(base_precision).rstrip('0').split('.')[-1])
+
+        return f"{rounded:.{decimals}f}"
+
     def place_market_buy_by_quote(self, symbol: str, usdt_amount: float) -> dict[str, Any]:
         payload = {
             "category": "spot",
@@ -60,12 +99,15 @@ class BybitClient:
         return self._request("POST", "/v5/order/create", payload)
 
     def place_market_sell_by_base(self, symbol: str, qty: float) -> dict[str, Any]:
+        # Округляем количество по правилам биржи
+        rounded_qty = self.round_qty(symbol, qty)
+
         payload = {
             "category": "spot",
             "symbol": symbol,
             "side": "Sell",
             "orderType": "Market",
-            "qty": f"{qty:.12f}",
+            "qty": rounded_qty,
             "marketUnit": "baseCoin",
         }
         return self._request("POST", "/v5/order/create", payload)
