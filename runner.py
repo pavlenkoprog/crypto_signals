@@ -6,7 +6,7 @@ import time
 import argparse
 import json
 from collections import Counter
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from pathlib import Path
 
 from core.config import INTERVAL, LIMIT, SYMBOLS
@@ -34,7 +34,7 @@ OPTIMIZATION_FILES = {
 }
 
 CYCLE_SECONDS = 60 * 5  # каждые 5 минут
-PROCESS_STARTED_AT = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+PROCESS_STARTED_AT = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 BASE_DIR = Path(__file__).resolve().parent
 OPTIMIZATION_DIR = BASE_DIR / "optimization" / "results"
 

@@ -1,10 +1,18 @@
 import hashlib
 import hmac
 import json
+import logging
 import time
 from typing import Any
 
 import requests
+
+# Настройка логирования ошибок округления
+logger = logging.getLogger(__name__)
+handler = logging.FileHandler('/root/projects/crypto_signals_auto_trade/bybit_errors.log')
+handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
+logger.setLevel(logging.WARNING)
 
 
 class BybitClient:
@@ -45,7 +53,11 @@ class BybitClient:
         resp.raise_for_status()
         result = resp.json()
         if result.get("retCode") != 0:
-            raise ValueError(f"Bybit error: {result.get('retCode')} {result.get('retMsg')}")
+            error_msg = f"Bybit error: {result.get('retCode')} {result.get('retMsg')}"
+            # Логируем ошибки округления
+            if result.get("retCode") in [170137, 170148]:
+                logger.error(f"{error_msg} | Payload: {payload}")
+            raise ValueError(error_msg)
         return result
 
     def get_symbol_precision(self, symbol: str) -> dict[str, Any]:
@@ -72,28 +84,47 @@ class BybitClient:
         }
 
     def round_qty(self, symbol: str, qty: float) -> str:
-        """Округлить количество по правилам биржи"""
+        """Округлить количество по правилам биржи (basePrecision)"""
         precision = self.get_symbol_precision(symbol)
         base_precision = precision["basePrecision"]
 
         # Округляем до нужного шага
         rounded = round(qty / base_precision) * base_precision
 
-        # Определяем количество знаков после запятой
+        # Используем максимум 5 знаков для надежности
         if base_precision >= 1:
             decimals = 0
         else:
-            decimals = len(str(base_precision).rstrip('0').split('.')[-1])
+            decimals = min(5, len(str(base_precision).rstrip('0').split('.')[-1]))
+
+        return f"{rounded:.{decimals}f}"
+
+    def round_quote_amount(self, symbol: str, usdt_amount: float) -> str:
+        """Округлить сумму в USDT по правилам биржи (quotePrecision)"""
+        precision = self.get_symbol_precision(symbol)
+        quote_precision = precision["quotePrecision"]
+
+        # Округляем до нужного шага
+        rounded = round(usdt_amount / quote_precision) * quote_precision
+
+        # Используем максимум 5 знаков для надежности
+        if quote_precision >= 1:
+            decimals = 0
+        else:
+            decimals = min(5, len(str(quote_precision).rstrip('0').split('.')[-1]))
 
         return f"{rounded:.{decimals}f}"
 
     def place_market_buy_by_quote(self, symbol: str, usdt_amount: float) -> dict[str, Any]:
+        # Округляем сумму в USDT по правилам биржи
+        rounded_amount = self.round_quote_amount(symbol, usdt_amount)
+
         payload = {
             "category": "spot",
             "symbol": symbol,
             "side": "Buy",
             "orderType": "Market",
-            "qty": f"{usdt_amount:.8f}",
+            "qty": rounded_amount,
             "marketUnit": "quoteCoin",
         }
         return self._request("POST", "/v5/order/create", payload)

@@ -6,7 +6,7 @@ import argparse
 import json
 import os
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from core.bybit_client import BybitClient
@@ -17,7 +17,7 @@ from core.trade_logger import log_trade
 from runner import STRATEGIES, consensus, load_optimized_params
 
 CYCLE_SECONDS = 60 * 5
-PROCESS_STARTED_AT = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+PROCESS_STARTED_AT = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 POSITIONS_FILE = Path(__file__).resolve().parent / "open_positions.json"
 TARGET_ORDER_USDT = 20.0
 MIN_ORDER_USDT = 5.0
@@ -94,7 +94,7 @@ def run_once(client: BybitClient):
                     "entry_price": price,
                     "qty": qty,
                     "usdt_amount": usdt_amount,
-                    "opened_at": datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
+                    "opened_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                 }
                 save_positions(positions)
                 log_trade(

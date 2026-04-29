@@ -1,6 +1,6 @@
 import csv
 import os
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "signals.csv")
@@ -34,7 +34,7 @@ def _ensure_header():
 def log_signal(symbol: str, price: float, signals: dict, consensus: str, run_started_at: str):
     _ensure_header()
     row = [
-        datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
+        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         run_started_at,
         symbol,
         round(price, 8),

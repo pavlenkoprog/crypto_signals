@@ -1,6 +1,6 @@
 import csv
 import os
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 TRADES_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "trades.csv")
@@ -39,7 +39,7 @@ def log_trade(
 ):
     _ensure_header()
     row = [
-        datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
+        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         symbol,
         action,
         round(usdt_amount, 8),

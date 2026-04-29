@@ -1,7 +1,7 @@
 import itertools
 import json
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
@@ -88,7 +88,7 @@ def run_grid_search(
 
     payload = {
         "strategy": strategy_name,
-        "generated_at_utc": datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
+        "generated_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         "interval": interval,
         "limit": limit,
         "symbols_count": len(SYMBOLS),
