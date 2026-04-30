@@ -74,6 +74,7 @@ def run_once(client: BybitClient):
 
             position = positions.get(symbol)
             if result == "BUY" and position is None:
+                # Проверяем баланс перед каждой покупкой
                 usdt_amount = get_order_amount(client)
                 if usdt_amount < MIN_ORDER_USDT:
                     log_trade(
@@ -88,37 +89,70 @@ def run_once(client: BybitClient):
                     )
                     print(f"SKIP {symbol:12s} not enough USDT balance")
                     continue
-                qty = usdt_amount / price
-                client.place_market_buy_by_quote(symbol, usdt_amount)
-                positions[symbol] = {
-                    "entry_price": price,
-                    "qty": qty,
-                    "usdt_amount": usdt_amount,
-                    "opened_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-                }
-                save_positions(positions)
-                log_trade(
-                    symbol=symbol,
-                    action="BUY",
-                    usdt_amount=usdt_amount,
-                    qty=qty,
-                    price=price,
-                    signal=result,
-                    result="OK",
-                    note="Opened position",
-                )
-                print(f"BUY  {symbol:12s} qty={qty:.8f} usdt={usdt_amount:.2f} price={price:.8f}")
+
+                # Пытаемся купить с обработкой ошибок
+                try:
+                    qty = usdt_amount / price
+                    client.place_market_buy_by_quote(symbol, usdt_amount)
+                    positions[symbol] = {
+                        "entry_price": price,
+                        "qty": qty,
+                        "usdt_amount": usdt_amount,
+                        "opened_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                    save_positions(positions)
+                    log_trade(
+                        symbol=symbol,
+                        action="BUY",
+                        usdt_amount=usdt_amount,
+                        qty=qty,
+                        price=price,
+                        signal=result,
+                        result="OK",
+                        note="Opened position",
+                    )
+                    print(f"BUY  {symbol:12s} qty={qty:.8f} usdt={usdt_amount:.2f} price={price:.8f}")
+                except Exception as buy_error:
+                    # Если ошибка при покупке - логируем как SKIP
+                    log_trade(
+                        symbol=symbol,
+                        action="BUY",
+                        usdt_amount=usdt_amount,
+                        qty=0.0,
+                        price=price,
+                        signal=result,
+                        result="SKIP",
+                        note=f"Buy failed: {str(buy_error)}",
+                    )
+                    print(f"SKIP {symbol:12s} buy error: {buy_error}")
 
             elif result == "SELL" and position is not None:
                 qty = float(position["qty"])
                 entry_price = float(position["entry_price"])
                 invested = float(position["usdt_amount"])
-                client.place_market_sell_by_base(symbol, qty)
-                proceeds = qty * price
-                pnl_usdt = proceeds - invested
-                pnl_pct = (pnl_usdt / invested * 100) if invested > 0 else 0.0
-                positions.pop(symbol, None)
-                save_positions(positions)
+
+                # Пытаемся продать
+                try:
+                    client.place_market_sell_by_base(symbol, qty)
+                    proceeds = qty * price
+                    pnl_usdt = proceeds - invested
+                    pnl_pct = (pnl_usdt / invested * 100) if invested > 0 else 0.0
+                    positions.pop(symbol, None)
+                    save_positions(positions)
+                except Exception as sell_error:
+                    # Если ошибка при продаже - логируем и продолжаем держать
+                    log_trade(
+                        symbol=symbol,
+                        action="SELL",
+                        usdt_amount=0.0,
+                        qty=qty,
+                        price=price,
+                        signal=result,
+                        result="SKIP",
+                        note=f"Sell failed: {str(sell_error)}",
+                    )
+                    print(f"SKIP {symbol:12s} sell error: {sell_error}")
+                    continue
                 log_trade(
                     symbol=symbol,
                     action="SELL",
@@ -136,17 +170,9 @@ def run_once(client: BybitClient):
                 print(f"HOLD {symbol:12s} signal={result} position={'yes' if position else 'no'}")
 
         except Exception as exc:
-            log_trade(
-                symbol=symbol,
-                action="ERROR",
-                usdt_amount=0.0,
-                qty=0.0,
-                price=0.0,
-                signal="N/A",
-                result="FAIL",
-                note=str(exc),
-            )
+            # Общие ошибки (получение данных, стратегия и т.д.)
             print(f"ERROR {symbol}: {exc}")
+            # Не логируем в trades.csv, т.к. это не торговая операция
 
 
 def main():
