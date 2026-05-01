@@ -127,14 +127,19 @@ def run_once(client: BybitClient):
                     print(f"SKIP {symbol:12s} buy error: {buy_error}")
 
             elif result == "SELL" and position is not None:
-                qty = float(position["qty"])
+                # Получаем реальный баланс с биржи (учитывает комиссии)
+                real_qty = client.get_coin_balance(symbol)
+                if real_qty == 0:
+                    print(f"SKIP {symbol:12s} no balance on exchange")
+                    continue
+
                 entry_price = float(position["entry_price"])
                 invested = float(position["usdt_amount"])
 
-                # Пытаемся продать
+                # Пытаемся продать реальное количество
                 try:
-                    client.place_market_sell_by_base(symbol, qty)
-                    proceeds = qty * price
+                    client.place_market_sell_by_base(symbol, real_qty)
+                    proceeds = real_qty * price
                     pnl_usdt = proceeds - invested
                     pnl_pct = (pnl_usdt / invested * 100) if invested > 0 else 0.0
                     positions.pop(symbol, None)
@@ -145,7 +150,7 @@ def run_once(client: BybitClient):
                         symbol=symbol,
                         action="SELL",
                         usdt_amount=0.0,
-                        qty=qty,
+                        qty=real_qty,
                         price=price,
                         signal=result,
                         result="SKIP",
@@ -157,7 +162,7 @@ def run_once(client: BybitClient):
                     symbol=symbol,
                     action="SELL",
                     usdt_amount=proceeds,
-                    qty=qty,
+                    qty=real_qty,
                     price=price,
                     signal=result,
                     result="OK",
@@ -165,7 +170,7 @@ def run_once(client: BybitClient):
                     pnl_pct=pnl_pct,
                     note=f"Entry={entry_price:.8f}",
                 )
-                print(f"SELL {symbol:12s} qty={qty:.8f} pnl={pnl_usdt:.4f} ({pnl_pct:.2f}%)")
+                print(f"SELL {symbol:12s} qty={real_qty:.8f} pnl={pnl_usdt:.4f} ({pnl_pct:.2f}%)")
             else:
                 print(f"HOLD {symbol:12s} signal={result} position={'yes' if position else 'no'}")
 

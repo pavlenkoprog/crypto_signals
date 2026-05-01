@@ -154,3 +154,18 @@ class BybitClient:
             if coin.get("coin") == "USDT":
                 return float(coin.get("walletBalance", "0"))
         return 0.0
+
+    def get_coin_balance(self, symbol: str) -> float:
+        """Получить реальный баланс монеты на бирже (например, RENDERUSDT -> RENDER)"""
+        coin = symbol.replace("USDT", "")
+        payload = {"accountType": "UNIFIED"}
+        result = self._request("GET", "/v5/account/wallet-balance", payload)
+        accounts = result.get("result", {}).get("list", [])
+        if not accounts:
+            return 0.0
+        coins = accounts[0].get("coin", [])
+        for c in coins:
+            if c.get("coin") == coin:
+                balance = c.get("walletBalance", "0")
+                return float(balance) if balance else 0.0
+        return 0.0
